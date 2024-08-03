@@ -24,6 +24,7 @@ class Sp3dRenderer extends StatefulWidget {
   final Sp3dLight light;
   final bool useUserGesture;
   final bool allowUserWorldRotation;
+  final bool allowMoveUpandDown;
   final bool allowUserWorldZoom;
   final bool checkTouchObj;
   late final ValueNotifier<int> vn;
@@ -88,6 +89,7 @@ class Sp3dRenderer extends StatefulWidget {
       {Key? key,
       this.useUserGesture = true,
       this.allowUserWorldRotation = true,
+      this.allowMoveUpandDown = true,
       this.allowUserWorldZoom = true,
       this.checkTouchObj = true,
       this.onPanDown,
@@ -143,11 +145,12 @@ class Sp3dRendererState extends State<Sp3dRenderer> {
           _p.lineTo(i.vertices2d[2].x, i.vertices2d[2].y);
           _p.close();
           if (_p.contains(d.toOffset())) {
-            if (isFirstPanDown) {
-              widget.onPanDown!(d, i);
-            } else {
-              widget.onSecondPanDown!(d, i);
-            }
+            // if (isFirstPanDown) {
+            //   widget.onPanDown!(d, i);
+            // } else {
+            //   widget.onSecondPanDown!(d, i);
+            // }
+            widget.onPanDown!(d, i);
             _canRotationAndZoom = false;
             return;
           }
@@ -226,11 +229,15 @@ class Sp3dRendererState extends State<Sp3dRenderer> {
           }
         },
         onPanUpdate: (Sp3dGestureDetails d) {
-          if (widget.allowUserWorldRotation && _canRotationAndZoom) {
+          if (widget.allowMoveUpandDown) {
+            _moveUpAndDown(d);
+          } else if (widget.allowUserWorldRotation && _canRotationAndZoom) {
             _rotation(d);
-          }
-          if (widget.onPanUpdate != null) {
-            widget.onPanUpdate!(d);
+          } else {
+            if (widget.onPanUpdate != null) {
+              // widget.onPanUpdate!(d);
+              _panDownAction(d, true);
+            }
           }
         },
         onPanEnd: (Sp3dGestureDetails d) {
@@ -293,6 +300,12 @@ class Sp3dRendererState extends State<Sp3dRenderer> {
   /// world rotation
   void _rotation(Sp3dGestureDetails d) {
     widget.rotationController.apply(widget.camera, d);
+    widget.vn.value += 1;
+  }
+
+  /// world move up and down
+  void _moveUpAndDown(Sp3dGestureDetails d) {
+    widget.rotationController.applyMove(widget.camera, d);
     widget.vn.value += 1;
   }
 }
