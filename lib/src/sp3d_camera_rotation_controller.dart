@@ -115,5 +115,53 @@ class Sp3dCameraRotationController {
   /// run onPanCancel or onPanEnd.
   void endProcess() {
     lastDiff = diff;
+    endTouch();
+  }
+
+  // MOVE CAMERA
+
+  Sp3dV2D? startPosition;
+  Sp3dV2D? lastPosition;
+  bool isDragging = false;
+  final double moveSpeed = 0.5; // Adjust this value to control movement speed
+  final double dragThreshold = 5.0; // Minimum distance to start dragging
+
+  void startTouch(Sp3dV2D position) {
+    startPosition = position;
+    lastPosition = position;
+    isDragging = false;
+  }
+
+  void applyMove(Sp3dCamera camera, Sp3dGestureDetails d) {
+    if (startPosition == null) {
+      startPosition = d.nowV;
+      lastPosition = d.nowV;
+      return;
+    }
+
+    if (!isDragging) {
+      if ((d.nowV - startPosition!).len() > dragThreshold) {
+        isDragging = true;
+        lastPosition = d
+            .nowV; // Update lastPosition to current position when dragging starts
+      }
+    } else {
+      // Only move the camera if we're dragging
+      double deltaX = d.nowV.x - lastPosition!.x;
+      double deltaY = d.nowV.y - lastPosition!.y;
+
+      Sp3dV3D moveVector = Sp3dV3D(-deltaX * moveSpeed, deltaY * moveSpeed, 0);
+      Sp3dV3D newPosition = camera.position + moveVector;
+      camera.move(newPosition);
+
+      lastPosition = d
+          .nowV; // Update lastPosition to current position after moving the camera
+    }
+  }
+
+  void endTouch() {
+    startPosition = null;
+    lastPosition = null;
+    isDragging = false;
   }
 }
