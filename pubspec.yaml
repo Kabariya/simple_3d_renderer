@@ -10,9 +10,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  simple_3d: ^13.1.1
-  util_simple_3d: ^9.4.1
+  simple_3d: ^16.0.2
+  util_simple_3d: ^12.0.2
 
 dev_dependencies:
   flutter_test:
+
     sdk: flutter
